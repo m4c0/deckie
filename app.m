@@ -1,11 +1,20 @@
 @import AppKit;
 @import Foundation;
 
+@interface POCWindow : NSPanel
+@end
+@implementation POCWindow
+@end
+
 @interface POCAppDelegate : NSObject<NSApplicationDelegate>
+- (void)blink:(id)e;
 @end
 @implementation POCAppDelegate
 - (BOOL)applicationShouldTerminateAfterLastWindowClosed:(NSApplication *)app {
   return YES;
+}
+- (void)blink:(id)e {
+  NSLog(@"ok");
 }
 @end
 
@@ -13,7 +22,7 @@ static void run(void) {
   NSViewController * vc = [NSViewController new];
   // vc.view = [NSViewDelegate new];
 
-  NSWindow * w = [NSWindow new];
+  POCWindow * w = [POCWindow new];
   w.acceptsMouseMovedEvents = YES;
   w.contentViewController = vc;
   w.styleMask = NSWindowStyleMaskClosable;
@@ -37,8 +46,16 @@ static void run(void) {
   NSMenu * bar = [NSMenu new];
   [bar addItem:item];
 
+  POCAppDelegate * del = [POCAppDelegate new];
+
+  NSStatusItem * status = [[NSStatusBar systemStatusBar] statusItemWithLength:NSSquareStatusItemLength];
+  status.behavior = NSStatusItemBehaviorTerminationOnRemoval;
+  status.button.title = @"OK";
+  status.button.target = del;
+  status.button.action = @selector(blink:);
+
   NSApplication * a = [NSApplication sharedApplication];
-  a.delegate = [POCAppDelegate new];
+  a.delegate = del;
   a.mainMenu = bar;
   [a activateIgnoringOtherApps:YES];
   [a run];
