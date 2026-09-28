@@ -18,10 +18,9 @@ static void run(void) {
   w.contentViewController = vc;
   w.styleMask = NSWindowStyleMaskClosable;
 
-  NSRect crect = NSMakeRect(0, 0, 64, 64);
+  NSRect crect = NSMakeRect(30, 30, 64, 64);
   NSRect frect = [w frameRectForContentRect:crect];
   [w setFrame:frect display:YES];
-  [w center];
   [w makeKeyAndOrderFront:w];
 
   // Apple menu
