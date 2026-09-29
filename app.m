@@ -2,9 +2,46 @@
 @import Carbon;
 @import Foundation;
 
-@interface POCWindow : NSPanel
+@interface POCView : NSView
+@property (nonatomic,strong) NSMutableArray * paths;
+@property (nonatomic,strong) NSBezierPath * curpath;
 @end
-@implementation POCWindow
+@implementation POCView
+- (BOOL)isOpaque { return NO; }
+
+- (void)mouseDown:(NSEvent *)e {
+  NSPoint point = [self convertPoint:e.locationInWindow fromView:nil];
+
+  self.curpath = [NSBezierPath new];
+  self.curpath.lineWidth = 3.0;
+  self.curpath.lineCapStyle = NSLineCapStyleRound;
+  [self.curpath moveToPoint:point];
+}
+- (void)mouseDragged:(NSEvent *)e {
+  if (!self.curpath) return;
+
+  NSPoint point = [self convertPoint:e.locationInWindow fromView:nil];
+  [self.curpath lineToPoint:point];
+  self.needsDisplay = YES;
+}
+- (void)mouseUp:(NSEvent *)e {
+  if (!self.curpath) return;
+  if (!self.paths) self.paths = [NSMutableArray new];
+  [self.paths addObject:self.curpath];
+  self.curpath = nil;
+}
+
+- (void)drawRect:(NSRect)rect {
+  [super drawRect:rect];
+
+  [[NSColor clearColor] setFill];
+  NSRectFill(rect);
+
+  [[NSColor redColor] setStroke];
+  for (NSBezierPath * path in self.paths) [path stroke];
+
+  if (self.curpath) [self.curpath stroke];
+}
 @end
 
 @interface POCAppDelegate : NSObject<NSApplicationDelegate>
@@ -24,15 +61,21 @@ static void blink_upp() {
 }
 
 static int run(void) {
-  NSViewController * vc = [NSViewController new];
-  // vc.view = [NSViewDelegate new];
+  POCView * v = [POCView new];
 
-  POCWindow * w = [POCWindow new];
+  NSViewController * vc = [NSViewController new];
+  vc.view = v;
+
+  NSWindow * w = [NSWindow new];
   w.acceptsMouseMovedEvents = YES;
   w.contentViewController = vc;
   w.styleMask = NSWindowStyleMaskClosable;
   w.level = kCGMainMenuWindowLevel - 1;
   w.hidesOnDeactivate = NO;
+  w.opaque = NO;
+  w.backgroundColor = [w.backgroundColor colorWithAlphaComponent:0.3];
+  // w.alphaValue = 0.6;
+  // w.ignoresMouseEvents = YES;
   w.collectionBehavior =
     NSWindowCollectionBehaviorTransient |
     NSWindowCollectionBehaviorStationary |
@@ -40,7 +83,8 @@ static int run(void) {
     NSWindowCollectionBehaviorCanJoinAllApplications |
     NSWindowCollectionBehaviorFullScreenAuxiliary;
 
-  NSRect crect = NSMakeRect(30, 30, 64, 64);
+  NSRect crect = NSMakeRect(30, 30, 512, 512);
+  // NSRect crect = NSMakeRect(30, 30, 32, 32);
   NSRect frect = [w frameRectForContentRect:crect];
   [w setFrame:frect display:YES];
   [w makeKeyAndOrderFront:w];
