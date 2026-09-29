@@ -62,22 +62,13 @@
 - (void)blink:(id)e;
 @end
 @implementation POCAppDelegate
-- (BOOL)applicationShouldTerminateAfterLastWindowClosed:(NSApplication *)app {
-  return YES;
-}
 - (void)blink:(id)e {
   NSLog(@"ok");
 }
 @end
 
 static POCWindow * w;
-static void blink_upp() {
-  [NSApp activateIgnoringOtherApps:YES];
-  [w makeKeyAndOrderFront:w];
-  NSLog(@"blink");
-}
-
-static int run(void) {
+static void create_window() {
   POCView * v = [POCView new];
 
   NSViewController * vc = [NSViewController new];
@@ -112,6 +103,19 @@ static int run(void) {
   [w setFrame:frect display:YES];
   [w makeKeyAndOrderFront:w];
 
+  [NSApp activateIgnoringOtherApps:YES];
+}
+static void destroy_window() {
+  [w close];
+  w = nil;
+}
+
+static void blink_upp() {
+  if (w) destroy_window();
+  else create_window();
+}
+
+static int run(void) {
   // Apple menu
   NSMenuItem * quit = [[NSMenuItem alloc] initWithTitle:@"Quit deckie"
                                                  action:@selector(terminate:)
@@ -155,10 +159,7 @@ static int run(void) {
       GetApplicationEventTarget(),
       kEventHotKeyNoOptions,
       &ref);
-  if (err != noErr) {
-        printf("hotkey registration failed: %d\n", (int)err);
-    return 2;
-  }
+  if (err != noErr) return 2;
 
   NSApplication * a = [NSApplication sharedApplication];
   a.delegate = del;
