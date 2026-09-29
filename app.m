@@ -1,4 +1,5 @@
 @import AppKit;
+@import Carbon;
 @import Foundation;
 
 @interface POCWindow : NSPanel
@@ -18,7 +19,11 @@
 }
 @end
 
-static void run(void) {
+static void blink_upp() {
+  NSLog(@"okay");
+}
+
+static int run(void) {
   NSViewController * vc = [NSViewController new];
   // vc.view = [NSViewDelegate new];
 
@@ -62,15 +67,42 @@ static void run(void) {
   status.button.target = del;
   status.button.action = @selector(blink:);
 
+  EventTypeSpec event_type = {
+    .eventClass = kEventClassKeyboard,
+    .eventKind  = kEventHotKeyPressed,
+  };
+  EventHandlerUPP upp = NewEventHandlerUPP(blink_upp);
+  if (noErr != InstallApplicationEventHandler(upp, 1, &event_type, NULL, NULL)) {
+    return 1;
+  }
+
+  EventHotKeyID hk_id = {
+    .signature = 0xcafe,
+    .id        = 0xbeba,
+  };
+  EventHotKeyRef ref = NULL;
+  OSStatus err = RegisterEventHotKey(
+      kVK_ANSI_Grave,
+      cmdKey | shiftKey,
+      hk_id,
+      GetApplicationEventTarget(),
+      kEventHotKeyNoOptions,
+      &ref);
+  if (err != noErr) {
+        printf("hotkey registration failed: %d\n", (int)err);
+    return 2;
+  }
+
   NSApplication * a = [NSApplication sharedApplication];
   a.delegate = del;
   a.mainMenu = bar;
   [a activateIgnoringOtherApps:YES];
   [a run];
+  return 0;
 }
 
 int main() {
   @autoreleasepool {
-    run();
+    return run();
   }
 }
