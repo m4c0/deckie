@@ -132,12 +132,6 @@ static int run(void) {
 
   POCAppDelegate * del = [POCAppDelegate new];
 
-  NSStatusItem * status = [[NSStatusBar systemStatusBar] statusItemWithLength:NSSquareStatusItemLength];
-  status.behavior = NSStatusItemBehaviorTerminationOnRemoval;
-  status.button.title = @"OK";
-  status.button.target = del;
-  status.button.action = @selector(blink:);
-
   EventTypeSpec event_type = {
     .eventClass = kEventClassKeyboard,
     .eventKind  = kEventHotKeyPressed,
