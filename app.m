@@ -58,40 +58,24 @@
 }
 @end
 
-@interface POCAppDelegate : NSObject<NSApplicationDelegate>
-- (void)blink:(id)e;
-@end
-@implementation POCAppDelegate
-- (void)blink:(id)e {
-  NSLog(@"ok");
-}
-@end
-
 static POCWindow * w;
 static void create_window() {
-  POCView * v = [POCView new];
-
   NSViewController * vc = [NSViewController new];
-  vc.view = v;
+  vc.view = [POCView new];
 
   w = [POCWindow new];
   w.acceptsMouseMovedEvents = YES;
   w.contentViewController = vc;
-  w.styleMask = NSWindowStyleMaskClosable
+  w.styleMask = 0
+    | NSWindowStyleMaskClosable
     | NSWindowStyleMaskNonactivatingPanel
     ;
-  // w.hidesOnDeactivate = NO;
   w.opaque = NO;
   w.backgroundColor = [w.backgroundColor colorWithAlphaComponent:0.3];
-  // w.alphaValue = 0.6;
-  // w.ignoresMouseEvents = YES;
   w.level = NSFloatingWindowLevel;
   w.floatingPanel = YES;
-  // w.level = NSPopUpMenuWindowLevel;
-  // w.level = NSScreenSaverWindowLevel;
   w.collectionBehavior = 0
     | NSWindowCollectionBehaviorTransient
-    // | NSWindowCollectionBehaviorStationary
     | NSWindowCollectionBehaviorCanJoinAllSpaces
     | NSWindowCollectionBehaviorCanJoinAllApplications
     | NSWindowCollectionBehaviorFullScreenAuxiliary
@@ -128,8 +112,6 @@ static int run(void) {
   NSMenu * bar = [NSMenu new];
   [bar addItem:item];
 
-  POCAppDelegate * del = [POCAppDelegate new];
-
   EventTypeSpec event_type = {
     .eventClass = kEventClassKeyboard,
     .eventKind  = kEventHotKeyPressed,
@@ -154,7 +136,6 @@ static int run(void) {
   if (err != noErr) return 2;
 
   NSApplication * a = [NSApplication sharedApplication];
-  a.delegate = del;
   a.mainMenu = bar;
   [a activateIgnoringOtherApps:YES];
   [a run];
