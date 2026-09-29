@@ -44,6 +44,11 @@
 }
 @end
 
+@interface POCWindow : NSPanel
+@end
+@implementation POCWindow
+@end
+
 @interface POCAppDelegate : NSObject<NSApplicationDelegate>
 - (void)blink:(id)e;
 @end
@@ -56,8 +61,11 @@
 }
 @end
 
+static POCWindow * w;
 static void blink_upp() {
-  NSLog(@"okay");
+  [NSApp activateIgnoringOtherApps:YES];
+  [w makeKeyAndOrderFront:w];
+  NSLog(@"blink");
 }
 
 static int run(void) {
@@ -66,22 +74,28 @@ static int run(void) {
   NSViewController * vc = [NSViewController new];
   vc.view = v;
 
-  NSWindow * w = [NSWindow new];
+  w = [POCWindow new];
   w.acceptsMouseMovedEvents = YES;
   w.contentViewController = vc;
-  w.styleMask = NSWindowStyleMaskClosable;
-  w.level = kCGMainMenuWindowLevel - 1;
-  w.hidesOnDeactivate = NO;
+  w.styleMask = NSWindowStyleMaskClosable
+    | NSWindowStyleMaskNonactivatingPanel
+    ;
+  // w.hidesOnDeactivate = NO;
   w.opaque = NO;
   w.backgroundColor = [w.backgroundColor colorWithAlphaComponent:0.3];
   // w.alphaValue = 0.6;
   // w.ignoresMouseEvents = YES;
-  w.collectionBehavior =
-    NSWindowCollectionBehaviorTransient |
-    NSWindowCollectionBehaviorStationary |
-    NSWindowCollectionBehaviorCanJoinAllSpaces |
-    NSWindowCollectionBehaviorCanJoinAllApplications |
-    NSWindowCollectionBehaviorFullScreenAuxiliary;
+  w.level = NSFloatingWindowLevel;
+  w.floatingPanel = YES;
+  // w.level = NSPopUpMenuWindowLevel;
+  // w.level = NSScreenSaverWindowLevel;
+  w.collectionBehavior = 0
+    | NSWindowCollectionBehaviorTransient
+    // | NSWindowCollectionBehaviorStationary
+    | NSWindowCollectionBehaviorCanJoinAllSpaces
+    | NSWindowCollectionBehaviorCanJoinAllApplications
+    | NSWindowCollectionBehaviorFullScreenAuxiliary
+    ;
 
   NSRect crect = NSMakeRect(30, 30, 512, 512);
   // NSRect crect = NSMakeRect(30, 30, 32, 32);
