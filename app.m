@@ -26,6 +26,14 @@ static void run(void) {
   w.acceptsMouseMovedEvents = YES;
   w.contentViewController = vc;
   w.styleMask = NSWindowStyleMaskClosable;
+  w.level = kCGMainMenuWindowLevel - 1;
+  w.hidesOnDeactivate = NO;
+  w.collectionBehavior =
+    NSWindowCollectionBehaviorTransient |
+    NSWindowCollectionBehaviorStationary |
+    NSWindowCollectionBehaviorCanJoinAllSpaces |
+    NSWindowCollectionBehaviorCanJoinAllApplications |
+    NSWindowCollectionBehaviorFullScreenAuxiliary;
 
   NSRect crect = NSMakeRect(30, 30, 64, 64);
   NSRect frect = [w frameRectForContentRect:crect];
