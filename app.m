@@ -97,9 +97,7 @@ static void create_window() {
     | NSWindowCollectionBehaviorFullScreenAuxiliary
     ;
 
-  NSRect crect = NSMakeRect(30, 30, 512, 512);
-  // NSRect crect = NSMakeRect(30, 30, 32, 32);
-  NSRect frect = [w frameRectForContentRect:crect];
+  NSRect frect = [w screen].frame;
   [w setFrame:frect display:YES];
   [w makeKeyAndOrderFront:w];
 
