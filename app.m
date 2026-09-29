@@ -47,6 +47,15 @@
 @interface POCWindow : NSPanel
 @end
 @implementation POCWindow
+- (BOOL)canBecomeKeyWindow {
+  return YES;
+}
+- (BOOL)acceptsFirstResponder {
+  return YES;
+}
+- (void)keyDown:(NSEvent *)e {
+  NSLog(@"keydown");
+}
 @end
 
 @interface POCAppDelegate : NSObject<NSApplicationDelegate>
