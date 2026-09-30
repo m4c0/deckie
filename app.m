@@ -80,9 +80,35 @@ static void toggle_sketchpad() {
   [NSApp activateIgnoringOtherApps:YES];
 }
 
-@interface POCWindow : NSPanel
+@interface POCActionPanel : NSPanel
 @end
-@implementation POCWindow
+
+static NSPanel * g_actionpanel;
+static void toggle_actionpanel() {
+  if (g_actionpanel) {
+    [g_actionpanel close];
+    g_actionpanel = nil;
+    return;
+  }
+
+  NSPanel * w = g_actionpanel = [POCActionPanel new];
+  w.level = NSFloatingWindowLevel;
+  w.floatingPanel = YES;
+  w.collectionBehavior = 0
+    | NSWindowCollectionBehaviorTransient
+    | NSWindowCollectionBehaviorCanJoinAllSpaces
+    | NSWindowCollectionBehaviorCanJoinAllApplications
+    | NSWindowCollectionBehaviorFullScreenAuxiliary
+    ;
+
+  NSRect frect = CGRectMake(30, 30, 32, 32);
+  [w setFrame:frect display:YES];
+  [w makeKeyAndOrderFront:w];
+
+  [NSApp activateIgnoringOtherApps:YES];
+}
+
+@implementation POCActionPanel
 - (BOOL)canBecomeKeyWindow {
   return YES;
 }
@@ -90,7 +116,16 @@ static void toggle_sketchpad() {
   return YES;
 }
 - (void)keyDown:(NSEvent *)e {
-  NSLog(@"keydown");
+  NSString * chrs = e.charactersIgnoringModifiers;
+  if (chrs.length != 1) return;
+
+  unichar c = [chrs characterAtIndex:0];
+  switch (c) {
+    case ' ': toggle_sketchpad(); break;
+    default: NSLog(@"keydown: %@", e); break;
+  }
+
+  toggle_actionpanel();
 }
 @end
 
@@ -113,7 +148,7 @@ static int run(void) {
     .eventClass = kEventClassKeyboard,
     .eventKind  = kEventHotKeyPressed,
   };
-  EventHandlerUPP upp = NewEventHandlerUPP(toggle_sketchpad);
+  EventHandlerUPP upp = NewEventHandlerUPP(toggle_actionpanel);
   if (noErr != InstallApplicationEventHandler(upp, 1, &event_type, NULL, NULL)) {
     return 1;
   }
