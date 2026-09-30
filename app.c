@@ -9,6 +9,7 @@ static LRESULT window_proc(HWND hwnd, UINT msg, WPARAM w_param, LPARAM l_param) 
       return 0;
 
     case WM_HOTKEY:
+      ShowWindow(hwnd, SW_SHOWNORMAL);
       return 0;
   }
 
@@ -36,8 +37,8 @@ int WinMain(HINSTANCE h_instance, HINSTANCE h_prev, LPSTR cmd_line, int cmd_show
 
   HWND hwnd = CreateWindow(
       "m4c0-window", "Deckie",
-      WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT,
-      800, 600, 
+      WS_OVERLAPPEDWINDOW,
+      30, GetSystemMetrics(SM_CYFULLSCREEN) - 30 - 32, 32, 32, 
       NULL, NULL, h_instance, NULL);
   if (!hwnd) {
     MessageBox(NULL, "Failed to create window", "Unhandled error", 0);
