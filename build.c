@@ -48,7 +48,8 @@ int main() {
 
   return 0;
 #elif _WIN32
-  puts("TBD");
+  RUN("clang", "-c", "-o", "app.o", "app.c");
+  RUN("clang", "-o", "deckie.exe", "app.o");
   return 1;
 #endif
 }
