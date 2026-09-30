@@ -92,6 +92,11 @@ static void toggle_actionpanel() {
   }
 
   NSPanel * w = g_actionpanel = [POCActionPanel new];
+  w.styleMask = 0
+    | NSWindowStyleMaskClosable
+    | NSWindowStyleMaskNonactivatingPanel
+    | NSWindowStyleMaskTitled
+    ;
   w.level = NSFloatingWindowLevel;
   w.floatingPanel = YES;
   w.collectionBehavior = 0
