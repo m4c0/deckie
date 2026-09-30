@@ -44,26 +44,18 @@
 }
 @end
 
-@interface POCWindow : NSPanel
-@end
-@implementation POCWindow
-- (BOOL)canBecomeKeyWindow {
-  return YES;
-}
-- (BOOL)acceptsFirstResponder {
-  return YES;
-}
-- (void)keyDown:(NSEvent *)e {
-  NSLog(@"keydown");
-}
-@end
+static NSPanel * g_sketchpad;
+static void toggle_sketchpad() {
+  if (g_sketchpad) {
+    [g_sketchpad close];
+    g_sketchpad = nil;
+    return;
+  }
 
-static POCWindow * w;
-static void create_window() {
   NSViewController * vc = [NSViewController new];
   vc.view = [POCView new];
 
-  w = [POCWindow new];
+  NSPanel * w = g_sketchpad = [NSPanel new];
   w.acceptsMouseMovedEvents = YES;
   w.contentViewController = vc;
   w.styleMask = 0
@@ -87,15 +79,20 @@ static void create_window() {
 
   [NSApp activateIgnoringOtherApps:YES];
 }
-static void destroy_window() {
-  [w close];
-  w = nil;
-}
 
-static void blink_upp() {
-  if (w) destroy_window();
-  else create_window();
+@interface POCWindow : NSPanel
+@end
+@implementation POCWindow
+- (BOOL)canBecomeKeyWindow {
+  return YES;
 }
+- (BOOL)acceptsFirstResponder {
+  return YES;
+}
+- (void)keyDown:(NSEvent *)e {
+  NSLog(@"keydown");
+}
+@end
 
 static int run(void) {
   // Apple menu
@@ -116,7 +113,7 @@ static int run(void) {
     .eventClass = kEventClassKeyboard,
     .eventKind  = kEventHotKeyPressed,
   };
-  EventHandlerUPP upp = NewEventHandlerUPP(blink_upp);
+  EventHandlerUPP upp = NewEventHandlerUPP(toggle_sketchpad);
   if (noErr != InstallApplicationEventHandler(upp, 1, &event_type, NULL, NULL)) {
     return 1;
   }
