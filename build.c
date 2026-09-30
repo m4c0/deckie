@@ -50,6 +50,6 @@ int main() {
 #elif _WIN32
   RUN("clang", "-c", "-o", "app.o", "app.c");
   RUN("clang", "-o", "deckie.exe", "app.o");
-  return 1;
+  return 0;
 #endif
 }
