@@ -7,6 +7,9 @@ static LRESULT window_proc(HWND hwnd, UINT msg, WPARAM w_param, LPARAM l_param) 
     case WM_DESTROY:
       PostQuitMessage(0);
       return 0;
+
+    case WM_HOTKEY:
+      return 0;
   }
 
   return DefWindowProc(hwnd, msg, w_param, l_param);
@@ -44,11 +47,15 @@ int WinMain(HINSTANCE h_instance, HINSTANCE h_prev, LPSTR cmd_line, int cmd_show
   ShowWindow(hwnd, cmd_show);
   UpdateWindow(hwnd);
 
+  RegisterHotKey(hwnd, 0xbeba, MOD_ALT | MOD_SHIFT, VK_OEM_5);
+
   MSG msg;
   while (GetMessage(&msg, 0, 0, 0)) {
     TranslateMessage(&msg);
     DispatchMessage(&msg);
   }
+
+  UnregisterHotKey(hwnd, 0xbeba); // I bet this is not needed
   return msg.wParam;
 }
 
