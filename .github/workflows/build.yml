@@ -13,5 +13,5 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - run: clang -o build.exe build.c
-      - run: ./build.exe
+      - run: .\build.exe
 
