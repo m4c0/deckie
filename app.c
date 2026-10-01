@@ -6,7 +6,8 @@
 
 typedef struct point_s {
   int x, y;
-  int down;
+  int paint;
+  int wasdown;
   struct point_s * next;
 } point_t;
 
@@ -19,11 +20,12 @@ static HDC     g_hdc_sketchpad;
 static point_t * g_pts_sketchpad;
 static point_t * g_pte_sketchpad;
 
-static int add_pt_sketchpad(HWND hwnd, LPARAM l_param, int down) {
+static int add_pt_sketchpad(HWND hwnd, LPARAM l_param, int paint, int wasdown) {
   point_t * p = malloc(sizeof(point_t));
   p->x = LOWORD(l_param);
   p->y = HIWORD(l_param);
-  p->down = down;
+  p->paint = paint;
+  p->wasdown = wasdown;
   p->next = NULL;
 
   if (!g_pts_sketchpad) {
@@ -76,15 +78,9 @@ static LRESULT wndproc_sketchpad(HWND hwnd, UINT msg, WPARAM w_param, LPARAM l_p
       HPEN pen = CreatePen(PS_SOLID, 3, RGB(255, 0, 0));
       SelectObject(hdc, pen);
 
-      int was_down = 0;
       for (point_t * p = g_pts_sketchpad; p; p = p->next) {
-        if (!was_down && p->down) {
-          MoveToEx(hdc, p->x, p->y, NULL);
-          was_down = 1;
-        } else {
-          LineTo(hdc, p->x, p->y);
-          was_down = p->down;
-        }
+        if (p->paint) LineTo(hdc, p->x, p->y);
+        else MoveToEx(hdc, p->x, p->y, NULL);
       }
 
       DeleteObject(pen);
@@ -95,15 +91,15 @@ static LRESULT wndproc_sketchpad(HWND hwnd, UINT msg, WPARAM w_param, LPARAM l_p
     }
 
     case WM_LBUTTONDOWN:
-      return add_pt_sketchpad(hwnd, l_param, 1);
+      return add_pt_sketchpad(hwnd, l_param, 0, 1);
     case WM_MOUSEMOVE:
       if (!g_pts_sketchpad) return 0;
-      if (!g_pts_sketchpad->down) return 0;
-      return add_pt_sketchpad(hwnd, l_param, 1);
+      if (!g_pte_sketchpad->wasdown) return 0;
+      return add_pt_sketchpad(hwnd, l_param, 1, 1);
     case WM_LBUTTONUP: {
       if (!g_pts_sketchpad) return 0;
-      if (!g_pts_sketchpad->down) return 0;
-      return add_pt_sketchpad(hwnd, l_param, 0);
+      if (!g_pte_sketchpad->wasdown) return 0;
+      return add_pt_sketchpad(hwnd, l_param, 1, 0);
     }
   }
   return DefWindowProc(hwnd, msg, w_param, l_param);
