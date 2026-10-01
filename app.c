@@ -67,14 +67,6 @@ static LRESULT wndproc_sketchpad(HWND hwnd, UINT msg, WPARAM w_param, LPARAM l_p
       PAINTSTRUCT ps;
       HDC hdc = BeginPaint(hwnd, &ps);
 
-      BLENDFUNCTION bf       = {
-        .BlendOp             = AC_SRC_OVER,
-        .SourceConstantAlpha = 128,
-      };
-      AlphaBlend(
-          hdc, 0, 0, ps.rcPaint.right - ps.rcPaint.left, ps.rcPaint.bottom - ps.rcPaint.top,
-          g_hdc_sketchpad, 0, 0, 128, 128, bf);
-
       HPEN pen = CreatePen(PS_SOLID, 3, RGB(255, 0, 0));
       SelectObject(hdc, pen);
 
@@ -85,9 +77,23 @@ static LRESULT wndproc_sketchpad(HWND hwnd, UINT msg, WPARAM w_param, LPARAM l_p
 
       DeleteObject(pen);
 
-
       EndPaint(hwnd, &ps);
       return 0;
+    }
+
+    case WM_ERASEBKGND: {
+      PAINTSTRUCT ps;
+      HDC hdc = BeginPaint(hwnd, &ps);
+      BLENDFUNCTION bf       = {
+        .BlendOp             = AC_SRC_OVER,
+        .SourceConstantAlpha = 128,
+      };
+      AlphaBlend(
+          hdc, 0, 0, ps.rcPaint.right - ps.rcPaint.left, ps.rcPaint.bottom - ps.rcPaint.top,
+          g_hdc_sketchpad, 0, 0, 128, 128, bf);
+
+      EndPaint(hwnd, &ps);
+      return 1;
     }
 
     case WM_LBUTTONDOWN:
