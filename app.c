@@ -8,7 +8,6 @@ static HWND g_hwnd_sketchpad;
 static void toggle_sketchpad(void) {
   if (g_hwnd_sketchpad) {
     DestroyWindow(g_hwnd_sketchpad);
-    g_hwnd_sketchpad = NULL;
     return;
   }
 
@@ -47,6 +46,10 @@ static LRESULT wndproc_actionpanel(HWND hwnd, UINT msg, WPARAM w_param, LPARAM l
 
 static LRESULT wndproc_sketchpad(HWND hwnd, UINT msg, WPARAM w_param, LPARAM l_param) {
   switch (msg) {
+    case WM_DESTROY:
+      g_hwnd_sketchpad = NULL;
+      return 0;
+
     case WM_PAINT: {
       PAINTSTRUCT ps;
       HDC dc = BeginPaint(hwnd, &ps);
@@ -105,8 +108,8 @@ int WinMain(HINSTANCE h_instance, HINSTANCE h_prev, LPSTR cmd_line, int cmd_show
 
   HWND hwnd = CreateWindow(
       "m4c0-actionpanel", "Deckie",
-      WS_OVERLAPPEDWINDOW,
-      30, GetSystemMetrics(SM_CYFULLSCREEN) - 30 - 32, 32, 32, 
+      WS_POPUP,
+      GetSystemMetrics(SM_CXSCREEN) - 30 - 64, GetSystemMetrics(SM_CYSCREEN) - 30 - 64, 64, 64, 
       NULL, NULL, h_instance, NULL);
   if (!hwnd) {
     MessageBox(NULL, "Failed to create window", "Unhandled error", 0);
