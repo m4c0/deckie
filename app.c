@@ -2,6 +2,27 @@
 
 #pragma comment(lib, "user32.lib")
 
+static HINSTANCE g_hinst;
+
+static HWND g_hwnd_sketchpad;
+static void toggle_sketchpad(void) {
+  if (hwnd_sketchpad) {
+    DestroyWindow(hwnd_sketchpad);
+    hwnd_sketchpad = NULL;
+    return;
+  }
+
+  g_hwnd_sketchpad = CreateWindowEx(
+      WS_EX_TOPMOST,
+      "m4c0-sketchpad", "Deckie Sketch",
+      WS_POPUP,
+      30, 30, GetSystemMetrics(SM_CXSCREEN) - 60, GetSystemMetrics(SM_CYSCREEN) - 60,
+      NULL, NULL, h_instance, NULL);
+  ShowWindow(g_hwnd_sketchpad, SW_SHOW);
+  UpdateWindow(g_hwnd_sketchpad);
+  SetForegroundWindow(g_hwnd_sketchpad);
+}
+
 static LRESULT wndproc_actionpanel(HWND hwnd, UINT msg, WPARAM w_param, LPARAM l_param) {
   switch (msg) {
     case WM_DESTROY:
@@ -11,12 +32,31 @@ static LRESULT wndproc_actionpanel(HWND hwnd, UINT msg, WPARAM w_param, LPARAM l
     case WM_HOTKEY:
       SetForegroundWindow(hwnd);
       return 0;
+
+    case WM_KEYDOWN:
+      if (HIWORD(l_param) & KF_REPEAT) return 0;
+
+      switch (LOWORD(w_param)) {
+        case VK_SPACE: toggle_sketchpad(); break;
+      }
+      return 0;
   }
 
   return DefWindowProc(hwnd, msg, w_param, l_param);
 }
 
 static LRESULT wndproc_sketchpad(HWND hwnd, UINT msg, WPARAM w_param, LPARAM l_param) {
+  switch (msg) {
+    case WM_PAINT: {
+      PAINTSTRUCT ps;
+      HDC dc = BeginPaint(hwnd, &ps);
+      // FillRect(dc, &ps.rcPaint, (HBRUSH)(COLOR_WINDOW + 1));
+      EndPaint(hwnd, &ps);
+      return 0;
+    }
+
+    // case WM_ERASEBKGND: return 1;
+  }
   return DefWindowProc(hwnd, msg, w_param, l_param);
 }
 
@@ -58,6 +98,8 @@ static int register_sketchpad_class(HINSTANCE h_instance) {
 }
 
 int WinMain(HINSTANCE h_instance, HINSTANCE h_prev, LPSTR cmd_line, int cmd_show) {
+  g_hinst = h_instance;
+
   if (register_actionpanel_class(h_instance)) return 1;
   if (register_sketchpad_class(h_instance)) return 1;
 
