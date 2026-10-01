@@ -1,21 +1,46 @@
 #include <windows.h>
 
+#pragma comment(lib, "gdi32.lib")
+#pragma comment(lib, "msimg32.lib")
 #pragma comment(lib, "user32.lib")
 
 static HINSTANCE g_hinst;
 
-static HWND g_hwnd_sketchpad;
+static HWND    g_hwnd_sketchpad;
+static HBITMAP g_hbmp_sketchpad;
+static HDC     g_hdc_sketchpad;
 
 static LRESULT wndproc_sketchpad(HWND hwnd, UINT msg, WPARAM w_param, LPARAM l_param) {
   switch (msg) {
+    case WM_CREATE: {
+      g_hdc_sketchpad  = CreateCompatibleDC(GetDC(hwnd));
+      g_hbmp_sketchpad = CreateCompatibleBitmap(g_hdc_sketchpad, 128, 128);
+
+      SelectObject(g_hdc_sketchpad, g_hbmp_sketchpad);
+
+      HBRUSH hbruh = CreateSolidBrush(RGB(255, 255, 255));
+      RECT r = { 0, 0, 128, 128 };
+      FillRect(g_hdc_sketchpad, &r, hbruh);
+      DeleteObject(hbruh);
+      return 0;
+    }
+
     case WM_DESTROY:
+      DeleteObject(g_hbmp_sketchpad);
+      DeleteDC(g_hdc_sketchpad);
       g_hwnd_sketchpad = NULL;
       return 0;
 
     case WM_PAINT: {
       PAINTSTRUCT ps;
-      HDC dc = BeginPaint(hwnd, &ps);
-      // FillRect(dc, &ps.rcPaint, (HBRUSH)(COLOR_WINDOW + 1));
+      HDC hdc = BeginPaint(hwnd, &ps);
+
+      BLENDFUNCTION bf       = {
+        .BlendOp             = AC_SRC_OVER,
+        .SourceConstantAlpha = 128,
+      };
+      AlphaBlend(hdc, 0, 0, 128, 128, g_hdc_sketchpad, 0, 0, 128, 128, bf);
+
       EndPaint(hwnd, &ps);
       return 0;
     }
