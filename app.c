@@ -5,6 +5,26 @@
 static HINSTANCE g_hinst;
 
 static HWND g_hwnd_sketchpad;
+
+static LRESULT wndproc_sketchpad(HWND hwnd, UINT msg, WPARAM w_param, LPARAM l_param) {
+  switch (msg) {
+    case WM_DESTROY:
+      g_hwnd_sketchpad = NULL;
+      return 0;
+
+    case WM_PAINT: {
+      PAINTSTRUCT ps;
+      HDC dc = BeginPaint(hwnd, &ps);
+      // FillRect(dc, &ps.rcPaint, (HBRUSH)(COLOR_WINDOW + 1));
+      EndPaint(hwnd, &ps);
+      return 0;
+    }
+
+    // case WM_ERASEBKGND: return 1;
+  }
+  return DefWindowProc(hwnd, msg, w_param, l_param);
+}
+
 static void toggle_sketchpad(void) {
   if (g_hwnd_sketchpad) {
     DestroyWindow(g_hwnd_sketchpad);
@@ -41,25 +61,6 @@ static LRESULT wndproc_actionpanel(HWND hwnd, UINT msg, WPARAM w_param, LPARAM l
       return 0;
   }
 
-  return DefWindowProc(hwnd, msg, w_param, l_param);
-}
-
-static LRESULT wndproc_sketchpad(HWND hwnd, UINT msg, WPARAM w_param, LPARAM l_param) {
-  switch (msg) {
-    case WM_DESTROY:
-      g_hwnd_sketchpad = NULL;
-      return 0;
-
-    case WM_PAINT: {
-      PAINTSTRUCT ps;
-      HDC dc = BeginPaint(hwnd, &ps);
-      // FillRect(dc, &ps.rcPaint, (HBRUSH)(COLOR_WINDOW + 1));
-      EndPaint(hwnd, &ps);
-      return 0;
-    }
-
-    // case WM_ERASEBKGND: return 1;
-  }
   return DefWindowProc(hwnd, msg, w_param, l_param);
 }
 
