@@ -6,9 +6,9 @@ static HINSTANCE g_hinst;
 
 static HWND g_hwnd_sketchpad;
 static void toggle_sketchpad(void) {
-  if (hwnd_sketchpad) {
-    DestroyWindow(hwnd_sketchpad);
-    hwnd_sketchpad = NULL;
+  if (g_hwnd_sketchpad) {
+    DestroyWindow(g_hwnd_sketchpad);
+    g_hwnd_sketchpad = NULL;
     return;
   }
 
@@ -17,7 +17,7 @@ static void toggle_sketchpad(void) {
       "m4c0-sketchpad", "Deckie Sketch",
       WS_POPUP,
       30, 30, GetSystemMetrics(SM_CXSCREEN) - 60, GetSystemMetrics(SM_CYSCREEN) - 60,
-      NULL, NULL, h_instance, NULL);
+      NULL, NULL, g_hinst, NULL);
   ShowWindow(g_hwnd_sketchpad, SW_SHOW);
   UpdateWindow(g_hwnd_sketchpad);
   SetForegroundWindow(g_hwnd_sketchpad);
