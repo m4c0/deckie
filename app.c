@@ -18,7 +18,7 @@ static LRESULT wndproc_sketchpad(HWND hwnd, UINT msg, WPARAM w_param, LPARAM l_p
 
       SelectObject(g_hdc_sketchpad, g_hbmp_sketchpad);
 
-      HBRUSH hbruh = CreateSolidBrush(RGB(255, 255, 255));
+      HBRUSH hbruh = CreateSolidBrush(RGB(0, 0, 0));
       RECT r = { 0, 0, 128, 128 };
       FillRect(g_hdc_sketchpad, &r, hbruh);
       DeleteObject(hbruh);
@@ -39,7 +39,9 @@ static LRESULT wndproc_sketchpad(HWND hwnd, UINT msg, WPARAM w_param, LPARAM l_p
         .BlendOp             = AC_SRC_OVER,
         .SourceConstantAlpha = 128,
       };
-      AlphaBlend(hdc, 0, 0, 128, 128, g_hdc_sketchpad, 0, 0, 128, 128, bf);
+      AlphaBlend(
+          hdc, 0, 0, ps.rcPaint.right - ps.rcPaint.left, ps.rcPaint.bottom - ps.rcPaint.top,
+          g_hdc_sketchpad, 0, 0, 128, 128, bf);
 
       EndPaint(hwnd, &ps);
       return 0;
