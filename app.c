@@ -4,11 +4,38 @@
 #pragma comment(lib, "msimg32.lib")
 #pragma comment(lib, "user32.lib")
 
+typedef struct point_s {
+  int x, y;
+  int down;
+  struct point_s * next;
+} point_t;
+
 static HINSTANCE g_hinst;
 
 static HWND    g_hwnd_sketchpad;
 static HBITMAP g_hbmp_sketchpad;
 static HDC     g_hdc_sketchpad;
+
+static point_t * g_pts_sketchpad;
+static point_t * g_pte_sketchpad;
+
+static int add_pt_sketchpad(HWND hwnd, LPARAM l_param, int down) {
+  point_t * p = malloc(sizeof(point_t));
+  p->x = LOWORD(l_param);
+  p->y = HIWORD(l_param);
+  p->down = down;
+  p->next = NULL;
+
+  if (!g_pts_sketchpad) {
+    g_pts_sketchpad = g_pte_sketchpad = p;
+  } else {
+    g_pte_sketchpad->next = p;
+    g_pte_sketchpad = p;
+  }
+
+  InvalidateRect(hwnd, NULL, 0);
+  return 0;
+}
 
 static LRESULT wndproc_sketchpad(HWND hwnd, UINT msg, WPARAM w_param, LPARAM l_param) {
   switch (msg) {
@@ -29,6 +56,9 @@ static LRESULT wndproc_sketchpad(HWND hwnd, UINT msg, WPARAM w_param, LPARAM l_p
       DeleteObject(g_hbmp_sketchpad);
       DeleteDC(g_hdc_sketchpad);
       g_hwnd_sketchpad = NULL;
+
+      for (point_t * p = g_pts_sketchpad; p; p = p->next) free(p);
+      g_pts_sketchpad = g_pte_sketchpad = NULL;
       return 0;
 
     case WM_PAINT: {
@@ -43,11 +73,38 @@ static LRESULT wndproc_sketchpad(HWND hwnd, UINT msg, WPARAM w_param, LPARAM l_p
           hdc, 0, 0, ps.rcPaint.right - ps.rcPaint.left, ps.rcPaint.bottom - ps.rcPaint.top,
           g_hdc_sketchpad, 0, 0, 128, 128, bf);
 
+      HPEN pen = CreatePen(PS_SOLID, 3, RGB(255, 0, 0));
+      SelectObject(hdc, pen);
+
+      int was_down = 0;
+      for (point_t * p = g_pts_sketchpad; p; p = p->next) {
+        if (!was_down && p->down) {
+          MoveToEx(hdc, p->x, p->y, NULL);
+          was_down = 1;
+        } else {
+          LineTo(hdc, p->x, p->y);
+          was_down = p->down;
+        }
+      }
+
+      DeleteObject(pen);
+
+
       EndPaint(hwnd, &ps);
       return 0;
     }
 
-    // case WM_ERASEBKGND: return 1;
+    case WM_LBUTTONDOWN:
+      return add_pt_sketchpad(hwnd, l_param, 1);
+    case WM_MOUSEMOVE:
+      if (!g_pts_sketchpad) return 0;
+      if (!g_pts_sketchpad->down) return 0;
+      return add_pt_sketchpad(hwnd, l_param, 1);
+    case WM_LBUTTONUP: {
+      if (!g_pts_sketchpad) return 0;
+      if (!g_pts_sketchpad->down) return 0;
+      return add_pt_sketchpad(hwnd, l_param, 0);
+    }
   }
   return DefWindowProc(hwnd, msg, w_param, l_param);
 }
