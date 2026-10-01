@@ -63,6 +63,14 @@ static LRESULT wndproc_sketchpad(HWND hwnd, UINT msg, WPARAM w_param, LPARAM l_p
       g_pts_sketchpad = g_pte_sketchpad = NULL;
       return 0;
 
+    case WM_KEYDOWN:
+      if (HIWORD(l_param) & KF_REPEAT) return 0;
+
+      switch (LOWORD(w_param)) {
+        case VK_SPACE: DestroyWindow(hwnd); break;
+      }
+      return 0;
+
     case WM_PAINT: {
       PAINTSTRUCT ps;
       HDC hdc = BeginPaint(hwnd, &ps);
