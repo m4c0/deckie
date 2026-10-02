@@ -60,7 +60,11 @@ static LRESULT wndproc_sketchpad(HWND hwnd, UINT msg, WPARAM w_param, LPARAM l_p
       DeleteDC(g_hdc_sketchpad);
       g_hwnd_sketchpad = NULL;
 
-      for (point_t * p = g_pts_sketchpad; p; p = p->next) free(p);
+      for (point_t * p = g_pts_sketchpad; p;) {
+        point_t * n = p->next;
+        free(p);
+        p = n;
+      }
       g_pts_sketchpad = g_pte_sketchpad = NULL;
       return 0;
 
