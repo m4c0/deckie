@@ -12,6 +12,7 @@ typedef struct point_s {
 } point_t;
 
 static HINSTANCE g_hinst;
+static HICON     g_hicon;
 
 static HWND    g_hwnd_sketchpad;
 static HBITMAP g_hbmp_sketchpad;
@@ -153,24 +154,30 @@ static LRESULT wndproc_actionpanel(HWND hwnd, UINT msg, WPARAM w_param, LPARAM l
         case VK_SPACE: toggle_sketchpad(); break;
       }
       return 0;
+
+    case WM_PAINT: {
+      PAINTSTRUCT ps;
+      HDC hdc = BeginPaint(hwnd, &ps);
+      DrawIconEx(hdc, 0, 0, g_hicon, 64, 64, 0, NULL, DI_NORMAL);
+      EndPaint(hwnd, &ps);
+      return 0;
+    }
   }
 
   return DefWindowProc(hwnd, msg, w_param, l_param);
 }
 
 static int register_actionpanel_class(HINSTANCE h_instance) {
-  HICON h_icon = LoadIcon(h_instance, "IDI_APPICON");
-
   WNDCLASSEX wcex  = {
     .cbSize        = sizeof(WNDCLASSEX),
     .style         = CS_HREDRAW | CS_VREDRAW,
     .lpfnWndProc   = &wndproc_actionpanel,
     .hInstance     = h_instance,
-    .hIcon         = h_icon,
+    .hIcon         = g_hicon,
     .hCursor       = LoadCursor(NULL, IDC_ARROW),
     .hbrBackground = (HBRUSH)(COLOR_WINDOW + 1),
     .lpszClassName = "m4c0-actionpanel",
-    .hIconSm       = h_icon,
+    .hIconSm       = g_hicon,
   };
   if (!RegisterClassEx(&wcex)) {
     MessageBox(NULL, "Failed to register window class", "Unhandled error", 0);
@@ -197,6 +204,7 @@ static int register_sketchpad_class(HINSTANCE h_instance) {
 
 int WinMain(HINSTANCE h_instance, HINSTANCE h_prev, LPSTR cmd_line, int cmd_show) {
   g_hinst = h_instance;
+  g_hicon = LoadIcon(h_instance, "IDI_APPICON");
 
   if (register_actionpanel_class(h_instance)) return 1;
   if (register_sketchpad_class(h_instance)) return 1;
