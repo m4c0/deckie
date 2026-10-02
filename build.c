@@ -37,6 +37,39 @@ static int run(char ** args) {
 }
 #define RUN(...) do { char * args[] = { __VA_ARGS__, 0 }; if (run(args)) return 1; } while (0)
 
+static char * slurp(const char * file, unsigned * osz) {
+  FILE * f = fopen(file, "rb");
+  assert(f);
+
+  assert(0 == fseek(f, 0, SEEK_END));
+  long sz = ftell(f);
+  assert(sz);
+  assert(0 == fseek(f, 0, SEEK_SET));
+
+  char * data = malloc(sz + 1);
+  assert(1 == fread(data, sz, 1, f));
+  data[sz] = 0;
+
+  fclose(f);
+  if (osz) *osz = sz;
+  return data;
+}
+static int icon() {
+  unsigned sz;
+  char * img = slurp("icon.png", &sz);
+
+  FILE * f = fopen("icon.ico", "wb");
+  fwrite("\0\0\1\0\1\0", 6, 1, f); // 0=Reserved; 1=ICO; 1 Image
+  fwrite("\0\0\0\0\0\0\x20\0", 8, 1, f); // W/H/C/Res. Planes/Bits
+
+  fwrite(&sz, 4, 1, f);
+  fwrite("\x16\0\0\0", 4, 1, f); // 20=offset from BOS
+  fwrite(img, sz, 1, f);
+
+  fclose(f);
+  return 0;
+}
+
 int main() {
 #ifdef __APPLE__
   mkdir("deckie.app", 0777);
@@ -48,8 +81,11 @@ int main() {
 
   return 0;
 #elif _WIN32
+  if (icon()) return 1;
+
+  RUN("llvm-rc", "/FO", "main.res", "main.rc");
   RUN("clang", "-c", "-o", "app.o", "app.c");
-  RUN("clang", "-o", "deckie.exe", "app.o");
+  RUN("clang", "-o", "deckie.exe", "app.o", "main.res");
   return 0;
 #endif
 }
