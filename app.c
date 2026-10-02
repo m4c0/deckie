@@ -134,7 +134,7 @@ static void toggle_sketchpad(void) {
       WS_EX_TOPMOST,
       "m4c0-sketchpad", "Deckie Sketch",
       WS_POPUP,
-      30, 30, GetSystemMetrics(SM_CXSCREEN) - 60, GetSystemMetrics(SM_CYSCREEN) - 60,
+      10, 10, GetSystemMetrics(SM_CXSCREEN) - 20, GetSystemMetrics(SM_CYSCREEN) - 20,
       NULL, NULL, g_hinst, NULL);
   ShowWindow(g_hwnd_sketchpad, SW_SHOW);
   UpdateWindow(g_hwnd_sketchpad);
